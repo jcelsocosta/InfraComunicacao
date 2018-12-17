@@ -41,6 +41,7 @@ def fileTransfer(threadName,hostFile,portFile,address):
 				dados, addr = sUdp.recvfrom(4096) #recebe file
 				arq.write(dados)
 				#print(dados)
+				
 				dados2, addr2 = sUdp.recvfrom(4096) # recebe sequence
 				seq = dados2.decode()
 				print("sequence: "+seq)
@@ -53,8 +54,16 @@ def fileTransfer(threadName,hostFile,portFile,address):
 				resp = rec.decode()
 				print (resp)
 				if (resp == 'fim'):
+					print("saiu")
 					digit=="0"
 					break
+				dados2, addr2 = sUdp.recvfrom(4096) #recebe sequence
+				seq = dados2.decode()
+				#print("sequence: "+seq)
+				Ack = seq
+				sUdp.sendto(Ack.encode("UTF-8"),(hostFile,int(portFile))) #envia ack
+				#print(resp)
+				
 		elif(digit=="3"):
 			sUdp.sendto(digit.encode("UTF-8"),(hostFile,int(portFile)))
 			sUdp.close()

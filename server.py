@@ -61,14 +61,36 @@ def fileTransfer(threadName):
 				if (env != resposta):
 					sUDP.sendto(i,addr)# retransmite o arquivo
 					Sequence = Sequence -1
-					sUDP.sendto(env.encode("UTF-8"),addr)# retransmite o sequence
-			sUDP.sendto(fim.encode("UTF-8"),addr)		
+					sUDP.sendto(env.encode("UTF-8"),addr)# retransmite o sequence	
 			arq.close()
 			dados = "0"
 		elif(dados=="2"):
 			for f in glob.glob('*.*'):
+				millis = int (round(time.time()*100) + (relogio.tm_sec)*100)
+				timeout = int (round(time.time()*1000) + (relogio.tm_sec)*1000)
 				put = str(f)
-				sUDP.sendto(put.encode("UTF-8"),addr)
+				sUDP.sendto(put.encode("UTF-8"),addr)#envia msg
+				Sequence = Sequence +1
+				env = str(Sequence)
+				sUDP.sendto(env.encode("UTF-8"),addr) # envia o sequence
+				#time
+				endMillis = int (round(time.time()*100) + (relogio.tm_sec)*100)
+				tempo = (endMillis - millis) 
+
+				if(tempo>=timeout):
+					sUDP.sendto(put.encode("UTF-8"),addr)#envia msg
+					Sequence = Sequence-1
+					sUDP.sendto(env.encode("UTF-8"),addr) #retransmite o sequence
+					
+				dataAck ,addr2 = sUDP.recvfrom(4096) #recebe Ack
+				resposta = dataAck.decode()
+				print("Ack:",resposta)
+
+				if (env != resposta):
+					sUDP.sendto(put.encode("UTF-8"),addr)#envia msg
+					Sequence = Sequence -1
+					sUDP.sendto(env.encode("UTF-8"),addr)# retransmite o sequence	
+
 			sUDP.sendto(fim.encode("UTF-8"),addr)
 			dados=="0"
 		elif(dados=="3"):
